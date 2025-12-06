@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { verificarToken } from '../middleware/auth.js';
+import { verificarToken } from '../middlewares/authMiddleware.js';
 import * as controller from '../controllers/inventarioController.js';
 
 

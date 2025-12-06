@@ -1,106 +1,101 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
+// -----------------------------------------------------
+// GENERADORES
+// -----------------------------------------------------
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
+// -----------------------------------------------------
+// CONEXIÓN A POSTGRES
+// -----------------------------------------------------
 datasource db {
   provider = "postgresql"
-  url = env("DATABASE_URL")
+  url      = env("DATABASE_URL")
 }
 
 // -----------------------------------------------------
-//  ENUMS
+// MODELOS
 // -----------------------------------------------------
-enum RolUsuario {
+
+model User {
+  id         Int       @id @default(autoincrement())
+  nombre     String
+  email      String    @unique
+  password   String
+  rol        Role      @default(USER)
+
+  productos        Producto[]
+  movimientos      MovimientoInventario[]
+  maquilaRegistros Maquila[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Producto {
+  id          Int       @id @default(autoincrement())
+  nombre      String
+  descripcion String?
+  sku         String     @unique
+  precio      Float
+  categoria   String?
+  stock       Int        @default(0)
+
+  inventario  Inventario?
+  movimientos MovimientoInventario[]
+  maquila     Maquila[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Inventario {
+  id         Int       @id @default(autoincrement())
+  productoId Int       @unique
+  cantidad   Int       @default(0)
+
+  producto   Producto  @relation(fields: [productoId], references: [id])
+}
+
+model MovimientoInventario {
+  id          Int       @id @default(autoincrement())
+  tipo        TipoMovimiento
+  cantidad    Int
+  descripcion String?
+
+  productoId  Int
+  usuarioId   Int
+
+  producto Producto @relation(fields: [productoId], references: [id])
+  usuario  User     @relation(fields: [usuarioId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+model Maquila {
+  id          Int      @id @default(autoincrement())
+  productoId  Int
+  usuarioId   Int
+  cantidad    Int
+  tipo        String
+  descripcion String?
+
+  producto Producto @relation(fields: [productoId], references: [id])
+  usuario  User     @relation(fields: [usuarioId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+// -----------------------------------------------------
+// ENUMS
+// -----------------------------------------------------
+
+enum Role {
   ADMIN
-  EMPLEADO
+  USER
 }
 
 enum TipoMovimiento {
   ENTRADA
   SALIDA
-  AJUSTE
-}
-
-// -----------------------------------------------------
-//  MODELO: USUARIOS
-// -----------------------------------------------------
-model User {
-  id        Int       @id @default(autoincrement())
-  nombre    String
-  email     String    @unique
-  password  String
-  rol       RolUsuario @default(EMPLEADO)
-  activo    Boolean   @default(true)
-
-  // Relación inversa con los movimientos
-  inventarioMovimientos InventarioMovimiento[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// -----------------------------------------------------
-//  MODELO: PRODUCTOS
-// -----------------------------------------------------
-model Producto {
-  id          Int       @id @default(autoincrement())
-  nombre      String
-  descripcion String?
-  sku         String?   @unique
-  stock       Int       @default(0)
-
-  // Relación con los movimientos
-  movimientos InventarioMovimiento[]
-
-  // Relación con maquila (órdenes)
-  maquilas Maquila[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// -----------------------------------------------------
-//  MODELO: INVENTARIO (MOVIMIENTOS)
-// -----------------------------------------------------
-model InventarioMovimiento {
-  id          Int            @id @default(autoincrement())
-  tipo        TipoMovimiento
-  cantidad    Int
-  descripcion String?
-
-  // FK → Producto
-  productoId Int
-  producto   Producto        @relation(fields: [productoId], references: [id])
-
-  // FK → User
-  userId Int
-  user   User               @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-}
-
-// -----------------------------------------------------
-//  MODELO: MAQUILA (ÓRDENES)
-// -----------------------------------------------------
-model Maquila {
-  id          Int       @id @default(autoincrement())
-  productoId  Int
-  cantidad    Int
-  fechaInicio DateTime
-  fechaFin    DateTime?
-  estado      String    @default("EN_PROCESO")
-  descripcion String?
-
-  // FK → Producto
-  producto Producto @relation(fields: [productoId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }

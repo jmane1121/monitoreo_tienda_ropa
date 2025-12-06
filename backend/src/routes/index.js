@@ -1,15 +1,13 @@
-import { Router } from "express";
-import authRoutes from './authRoutes';
-import productosRoutes from './productoRoutes';
-import movimientosRoutes from './inventarioRoutes';
-import maquilaRoutes from './maquilaRoutes';
+import authRoutes from "./authRoutes.js";
+import userRoutes from "./userRoutes.js";
+import productoRoutes from "./productoRoutes.js";
+import inventarioRoutes from "./inventarioRoutes.js";
+import maquilaRoutes from "./maquilaRoutes.js";
 
-const router = Router();
-
-router.use('/auth', authRoutes);
-router.use('/productos', productosRoutes);
-router.use('/movimientos', movimientosRoutes);
-router.use('/maquila', maquilaRoutes); 
-router.use('/users', userRoutes);
-
-export default router;
+export default (app) => {
+    app.use("/auth", authRoutes);
+    app.use("/users", userRoutes);
+    app.use("/productos", productoRoutes);
+    app.use("/inventario", inventarioRoutes);
+    app.use("/maquila", maquilaRoutes);
+};

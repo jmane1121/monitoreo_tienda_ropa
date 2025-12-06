@@ -1,13 +1,24 @@
-import { Router } from 'express';
-import { verificarToken } from '../middlewares/authMiddleware.js';
-import * as controller from '../controllers/user.controller.js';
+import { Router } from "express";
+import {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+  changePassword
+} from "../controllers/userController.js";
+
+import { verifyToken } from "../middlewares/verifyToken.js";
+import { roleProtected } from "../middlewares/roleProtected.js";
 
 const router = Router();
 
-router.post('/', verificarToken, controller.crearUsuario);
-router.get('/', verificarToken, controller.listarUsuarios);
-router.get('/:id', verificarToken, controller.obtenerUsuario);
-router.put('/:id', verificarToken, controller.actualizarUsuario);
-router.delete('/:id', verificarToken, controller.eliminarUsuario);
+// Solo ADMIN puede administrar usuarios
+router.get("/", verifyToken, roleProtected("ADMIN"), getUsers);
+router.get("/:id", verifyToken, roleProtected("ADMIN"), getUserById);
+router.post("/", verifyToken, roleProtected("ADMIN"), createUser);
+router.put("/:id", verifyToken, roleProtected("ADMIN"), updateUser);
+router.put("/:id/password", verifyToken, roleProtected("ADMIN"), changePassword);
+router.delete("/:id", verifyToken, roleProtected("ADMIN"), deleteUser);
 
 export default router;
